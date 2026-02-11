@@ -296,10 +296,20 @@ Key modules:
 ## ⚙️ Options
 
 - `--limit`: number of commits to analyze (default: 50)
-- `--model`: OpenAI model to use (default: `gpt-4.1-mini`)
+- `--model`: OpenAI model to use (default: `gpt-4.1-mini`). See [available OpenAI models](https://developers.openai.com/api/docs/models)
 - `--url`: analyze a remote repository
 - `--analyze`: analyze commit history mode
 - `--write`: interactive commit writer mode
+
+---
+
+## 🌐 Remote repo behavior
+
+- Uses shallow clone: `git clone --depth 200`
+- Clones into a temporary directory for analysis
+- Temporary clone directory is deleted after the run
+- Best used with `--limit` to keep analysis focused on recent commits
+- Public repositories are supported by default; private repositories require pre-configured Git credentials
 
 ---
 

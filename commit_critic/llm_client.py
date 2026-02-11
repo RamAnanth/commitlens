@@ -43,14 +43,17 @@ class LLMClient:
         try:
             data = _parse_json(payload)
             response = CritiqueResponse.model_validate(data)
-            expected_ids = {c.sha for c in commits}
-            returned_ids = {c.id for c in response.critiques}
-            if returned_ids != expected_ids:
+            expected_ids = [c.sha for c in commits]
+            normalized_critiques = _normalize_critique_ids(
+                response.critiques, expected_ids
+            )
+            returned_ids = {c.id for c in normalized_critiques}
+            if returned_ids != set(expected_ids):
                 raise RuntimeError(
                     "The AI returned an incomplete or mismatched analysis. "
                     f"Expected {len(expected_ids)} commit ids, got {len(returned_ids)}."
                 )
-            return response
+            return CritiqueResponse(critiques=normalized_critiques)
         except (json.JSONDecodeError, ValidationError) as exc:
             raise RuntimeError(
                 "The AI returned an invalid response while analyzing commits. "
@@ -110,26 +113,37 @@ class LLMClient:
 
     def _call_model_json(self, system_prompt: str, user_prompt: str) -> str:
         try:
+            include_temperature = _model_supports_temperature(self.cfg.model)
             if hasattr(self.client, "responses"):
-                response = self.client.responses.create(
-                    model=self.cfg.model,
-                    input=[
+                request_kwargs = {
+                    "model": self.cfg.model,
+                    "input": [
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt},
                     ],
-                    text={"format": {"type": "json_object"}},
-                    temperature=0,
+                    "text": {"format": {"type": "json_object"}},
+                }
+                # NOTE: gpt-5, gpt-5-mini, and gpt-5-nano models do not support
+                # the temperature parameter.
+                if include_temperature:
+                    request_kwargs["temperature"] = 0
+                response = self.client.responses.create(
+                    **request_kwargs
                 )
                 return response.output_text
 
-            chat = self.client.chat.completions.create(
-                model=self.cfg.model,
-                messages=[
+            chat_kwargs = {
+                "model": self.cfg.model,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                response_format={"type": "json_object"},
-                temperature=0,
+                "response_format": {"type": "json_object"},
+            }
+            if include_temperature:
+                chat_kwargs["temperature"] = 0
+            chat = self.client.chat.completions.create(
+                **chat_kwargs
             )
             return chat.choices[0].message.content or ""
         except RateLimitError as exc:
@@ -145,22 +159,32 @@ class LLMClient:
                 "Please check your network connection and try again."
             ) from exc
         except APIStatusError as exc:
+            detail = _extract_status_detail(exc)
             raise RuntimeError(
-                f"Please try again. The AI service returned an error (status {exc.status_code})."
+                "Please try again. "
+                f"The AI service returned an error (status {exc.status_code}). "
+                f"{detail}"
             ) from exc
 
     def _stream_model(self, system_prompt: str, user_prompt: str) -> Iterable[str]:
         try:
+            include_temperature = _model_supports_temperature(self.cfg.model)
             if hasattr(self.client, "responses"):
-                stream = self.client.responses.create(
-                    model=self.cfg.model,
-                    input=[
+                request_kwargs = {
+                    "model": self.cfg.model,
+                    "input": [
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt},
                     ],
-                    text={"format": {"type": "text"}},
-                    temperature=0,
-                    stream=True,
+                    "text": {"format": {"type": "text"}},
+                    "stream": True,
+                }
+                # NOTE: gpt-5, gpt-5-mini, and gpt-5-nano models do not support
+                # the temperature parameter.
+                if include_temperature:
+                    request_kwargs["temperature"] = 0
+                stream = self.client.responses.create(
+                    **request_kwargs
                 )
                 for event in stream:
                     if getattr(event, "type", None) == "response.output_text.delta":
@@ -169,14 +193,18 @@ class LLMClient:
                             yield delta
                 return
 
-            stream = self.client.chat.completions.create(
-                model=self.cfg.model,
-                messages=[
+            chat_kwargs = {
+                "model": self.cfg.model,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                temperature=0,
-                stream=True,
+                "stream": True,
+            }
+            if include_temperature:
+                chat_kwargs["temperature"] = 0
+            stream = self.client.chat.completions.create(
+                **chat_kwargs
             )
             for chunk in stream:
                 if not chunk.choices:
@@ -197,14 +225,78 @@ class LLMClient:
                 "Please check your network connection and try again."
             ) from exc
         except APIStatusError as exc:
+            detail = _extract_status_detail(exc)
             raise RuntimeError(
-                f"Please try again. The AI service returned an error (status {exc.status_code})."
+                "Please try again. "
+                f"The AI service returned an error (status {exc.status_code}). "
+                f"{detail}"
             ) from exc
 
 
 
 def _parse_json(payload: str) -> dict:
     return json.loads(payload)
+
+
+def _extract_status_detail(exc: APIStatusError) -> str:
+    parts: list[str] = []
+    message = str(exc).strip()
+    if message:
+        parts.append(message)
+
+    body = getattr(exc, "body", None)
+    if body:
+        try:
+            body_text = json.dumps(body, ensure_ascii=False)
+        except TypeError:
+            body_text = str(body)
+        body_text = body_text.strip()
+        if body_text and body_text not in parts:
+            parts.append(body_text)
+
+    if not parts:
+        return "No additional details were provided."
+
+    detail = " | ".join(parts)
+    if len(detail) > 500:
+        detail = detail[:500].rstrip() + "..."
+    return detail
+
+
+def _normalize_critique_ids(
+    critiques: list, expected_ids: list[str]
+) -> list:
+    normalized = []
+    seen: set[str] = set()
+    for critique in critiques:
+        resolved = _resolve_commit_id(critique.id, expected_ids)
+        if resolved is None or resolved in seen:
+            raise RuntimeError(
+                "The AI returned an incomplete or mismatched analysis. "
+                "Commit ids could not be mapped reliably."
+            )
+        critique.id = resolved
+        seen.add(resolved)
+        normalized.append(critique)
+    return normalized
+
+
+def _resolve_commit_id(raw_id: str, expected_ids: list[str]) -> str | None:
+    token = raw_id.strip().strip("`\"'")
+    if token in expected_ids:
+        return token
+    candidates = [eid for eid in expected_ids if eid.startswith(token) or token.startswith(eid)]
+    if len(candidates) == 1:
+        return candidates[0]
+    return None
+
+
+def _model_supports_temperature(model: str) -> bool:
+    normalized = model.strip().lower()
+    # NOTE: gpt-5, gpt-5-mini, and gpt-5-nano models do not support
+    # the temperature parameter.
+    unsupported_prefixes = ("gpt-5", "gpt-5-mini", "gpt-5-nano")
+    return not any(normalized.startswith(prefix) for prefix in unsupported_prefixes)
 
 
 def _parse_suggestion_text(text: str) -> SuggestionResponse:
