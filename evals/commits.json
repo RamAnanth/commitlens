@@ -1,0 +1,122 @@
+[
+  {
+    "commit": "wip",
+    "expected_score": 1,
+    "expected_bucket": "needs_work",
+    "rationale": "No meaningful information. Violates basic commit hygiene - WIP commits should never reach main."
+  },
+  {
+    "commit": "fixed bug",
+    "expected_score": 2,
+    "expected_bucket": "needs_work",
+    "rationale": "Extremely vague. No scope, component, or description of what was broken or fixed."
+  },
+  {
+    "commit": "update stuff",
+    "expected_score": 1,
+    "expected_bucket": "needs_work",
+    "rationale": "Completely meaningless. 'Stuff' provides zero context about what changed."
+  },
+  {
+    "commit": "revert: remove caching change",
+    "expected_score": 3,
+    "expected_bucket": "needs_work",
+    "rationale": "Has conventional prefix but lacks essential context: why revert? What broke? Which commit?"
+  },
+  {
+    "commit": "fix: button not working",
+    "expected_score": 4,
+    "expected_bucket": "needs_work",
+    "rationale": "Conventional format but vague scope. Which button? What wasn't working? Missing component prefix."
+  },
+  {
+    "commit": "feat: new feature",
+    "expected_score": 2,
+    "expected_bucket": "needs_work",
+    "rationale": "Tautological and useless. 'feat' already means feature - adds no information about what was added."
+  },
+  {
+    "commit": "fix(payment): stripe webhook",
+    "expected_score": 5,
+    "expected_bucket": "mid",
+    "rationale": "Has type and scope but incomplete. What about the webhook was fixed? Unclear action."
+  },
+  {
+    "commit": "chore: bump dependencies",
+    "expected_score": 5,
+    "expected_bucket": "mid",
+    "rationale": "Conventional format and clear intent, but missing which dependencies and why (security? features?)."
+  },
+  {
+    "commit": "docs: update README",
+    "expected_score": 5,
+    "expected_bucket": "mid",
+    "rationale": "Valid type but too generic. What section? What information was added/changed?"
+  },
+  {
+    "commit": "refactor(db): split user table migration",
+    "expected_score": 6,
+    "expected_bucket": "mid",
+    "rationale": "Clear scope and action, but missing rationale. Why split? Performance? Data model change?"
+  },
+  {
+    "commit": "fix(ui): handle null profile in header",
+    "expected_score": 7,
+    "expected_bucket": "mid",
+    "rationale": "Specific component and issue identified. Missing: how it manifested, impact on users."
+  },
+  {
+    "commit": "test(api): add integration tests for auth endpoints",
+    "expected_score": 7,
+    "expected_bucket": "mid",
+    "rationale": "Clear scope and test type. Could improve with coverage details or edge cases tested."
+  },
+  {
+    "commit": "perf(api): optimize user query with indexes\n\nAdded composite index on (email, status) to speed up\nactive user lookups from 800ms to 50ms",
+    "expected_score": 8,
+    "expected_bucket": "well_written",
+    "rationale": "Clear optimization with specific technical solution and quantified performance improvement."
+  },
+  {
+    "commit": "feat(auth): add token refresh flow\n\n- Persist refresh token in httpOnly cookie\n- Auto-retry 401s once before redirecting to login\n- Reduces user re-authentication by 80%",
+    "expected_score": 9,
+    "expected_bucket": "well_written",
+    "rationale": "Excellent: scoped feature, concrete implementation details, measurable user impact."
+  },
+  {
+    "commit": "feat(api): add Redis caching layer\n\n- Implement write-through cache for read endpoints\n- Configure 5-minute TTL for user profile data\n- Add cache invalidation on profile updates\n- Improves p95 response time from 450ms to 180ms\n\nAddresses performance issues reported in #1234",
+    "expected_score": 10,
+    "expected_bucket": "well_written",
+    "rationale": "Exemplary: clear feature, detailed implementation, quantified metrics, links to issue context."
+  },
+  {
+    "commit": "feat(search): add query parser and tests\n\n- Support quoted phrases for exact matching\n- Handle AND/OR operators\n- Add 95% test coverage for parser edge cases",
+    "expected_score": 9,
+    "expected_bucket": "well_written",
+    "rationale": "Well-structured feature with specific capabilities and quality indicators (test coverage)."
+  },
+  {
+    "commit": "fix(checkout): prevent duplicate order submissions\n\n- Add idempotency key to order creation API\n- Debounce submit button with 500ms delay\n- Show loading state during submission\n\nFixes race condition causing double charges in #892",
+    "expected_score": 10,
+    "expected_bucket": "well_written",
+    "rationale": "Perfect: critical bug fix with root cause, multiple preventive measures, UX improvement, issue reference."
+  },
+  {
+    "commit": "refactor(core): extract validation logic into reusable hooks\n\nMoved inline validation from 8 form components into\nshared useFormValidation hook. Reduces code duplication\nand standardizes error handling across the app.",
+    "expected_score": 8,
+    "expected_bucket": "well_written",
+    "rationale": "Good refactor with clear rationale and scope. Shows impact (8 components) and benefits."
+  },
+  {
+    "commit": "chore(deps): upgrade React 17 -> 18\n\n- Update react and react-dom to 18.2.0\n- Migrate to createRoot API\n- Update tests for new rendering behavior\n- Enables Concurrent Mode features for future work",
+    "expected_score": 8,
+    "expected_bucket": "well_written",
+    "rationale": "Thorough maintenance work with version details, migration steps, and forward-looking context."
+  },
+  {
+    "commit": "security: patch XSS vulnerability in comment rendering\n\nSanitize user-generated HTML content before display using\nDOMPurify. Prevents script injection attacks discovered in\nsecurity audit.\n\nCVE-2024-XXXXX",
+    "expected_score": 10,
+    "expected_bucket": "well_written",
+    "rationale": "Critical security fix with specific vulnerability, solution, discovery context, and CVE reference."
+  }
+]

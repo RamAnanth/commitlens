@@ -1,0 +1,16 @@
+[project]
+name = "commit-critic"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "RamAnanth", email = "ram.ananth14@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=2.18.0",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.1",
+    "rich>=14.3.2",
+    "typer>=0.21.1",
+]
