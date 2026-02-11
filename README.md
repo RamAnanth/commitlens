@@ -202,6 +202,24 @@ Press Enter to accept, or type your own message ():
 
 ---
 
+## 📐 Scoring rubric
+
+CommitLens scores each commit from `0` to `10` based on Conventional Commit clarity and specificity.
+
+Score bands:
+
+- `0-4` -> `needs_work`
+- `5-7` -> `mid`
+- `8-10` -> `well_written`
+
+What the stats mean:
+
+- `Average score`: arithmetic mean of all analyzed commit scores
+- `Vague commits`: commits with score `< 5` (same threshold as `needs_work`)
+- `One-word commits`: commits whose message contains only one word
+
+---
+
 ## 🧪 Evaluation
 
 Run eval suite:
@@ -212,8 +230,24 @@ uv run python evals/run_eval.py
 
 Eval report includes:
 
-- bucket accuracy (`needs_work`/`mid`/`well_written`)
-- score tolerance metric (±1) for LLM variance
+- Bucket accuracy (`needs_work` / `mid` / `well_written`)
+- Score tolerance metric (`±1`) for LLM variance
+- Repeatability check: each eval case is run `5` times to measure consistency across runs
+
+Eval bucket definitions:
+
+- `needs_work`: score `< 5`
+- `mid`: score `5-7`
+- `well_written`: score `>= 8`
+
+How to read eval columns:
+
+- `Expected`: expected bucket from `evals/commits.json`
+- `Expected Score`: target score from `evals/commits.json`
+- `Pass %`: percentage of runs where predicted bucket matched expected bucket
+- `Score μ`: mean predicted score across repeated runs
+- `Score σ`: score standard deviation across repeated runs
+- `Tolerance %`: percentage of runs where `abs(predicted - expected_score) <= 1`
 
 ---
 
