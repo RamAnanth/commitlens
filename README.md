@@ -59,6 +59,15 @@ CommitLens turns commit history into actionable feedback and helps teams write c
 
 ---
 
+## ✅ Prerequisites
+
+- Python 3.11+
+- Git
+- Python package manager (recommended: `uv`, install with `pip install uv`)
+- OpenAI API key via environment variable `OPENAI_API_KEY`
+
+---
+
 ## ⚡ Quick start
 
 ```bash
