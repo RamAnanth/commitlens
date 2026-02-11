@@ -133,32 +133,40 @@ uv run python commit_critic.py --help
 💩 COMMITS THAT NEED WORK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-No weak commits found.
-
+╭─────────────────────────────────────────────────────────────────────────────╮
+│ Commit: "add github action and quick start guide"                           │
+│ Score: 3/10                                                                 │
+│ Issue: Missing type prefix and scope; message is vague and not capitalized. │
+│ Better: ci: add GitHub Action and docs: add quick start guide               │
+╰─────────────────────────────────────────────────────────────────────────────╯
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💎 WELL-WRITTEN COMMITS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ Commit: "chore: add MIT license and update README with license link                                                  │
-│                                                                                                                      │
-│   - Added a new LICENSE file containing the full MIT License text                                                    │
-│   - Updated README.md to replace placeholder license text with a link to the LICENSE file"                           │
-│ Score: 8/10                                                                                                          │
-│ Why it's good: The message clearly states what was done and uses the correct type. The detailed bullet points help   │
-│ understand the changes but could be shortened for brevity.                                                           │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Commit: "chore: add MIT license and update README with license link                         │
+│                                                                                             │
+│   - Added a new LICENSE file containing the full MIT License text                           │
+│   - Updated README.md to replace placeholder license text with a link to the LICENSE file"  │
+│ Score: 9/10                                                                                 │
+│ Why it's good: Proper type 'chore' used; clear and descriptive message with useful details. │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯
+╭──────────────────────────────────────────────────────────────────────────────────────────╮
+│ Commit: "docs: enhance README with detailed usage, features, examples, and architecture" │
+│ Score: 8/10                                                                              │
+│ Why it's good: Uses 'docs' type correctly and clearly describes the changes made.        │
+╰──────────────────────────────────────────────────────────────────────────────────────────╯
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 YOUR STATS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-┌──────────────────┬──────────┐
-│ Average score    │ 7.5/10   │
-│ Vague commits    │ 0 (0.0%) │
-│ One-word commits │ 0 (0.0%) │
-└──────────────────┴──────────┘
+┌──────────────────┬───────────┐
+│ Average score    │ 6.8/10    │
+│ Vague commits    │ 1 (25.0%) │
+│ One-word commits │ 0 (0.0%)  │
+└──────────────────┴───────────┘
 ```
 
 ### Interactive mode
