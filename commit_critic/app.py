@@ -198,8 +198,8 @@ def run_write(cfg: AppConfig) -> None:
     user_input = Prompt.ask("Press Enter to accept, or type your own message", default="")
     final_message = suggestion.full_message if user_input.strip() == "" else user_input
 
-    panel = Panel.fit(final_message, title="Commit Message")
-    console.print(panel)
+    console.print("\n[bold]Commit Message (copy/paste):[/bold]")
+    console.print(final_message)
 
 
 if __name__ == "__main__":

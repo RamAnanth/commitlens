@@ -132,12 +132,11 @@ class AppFlowTests(unittest.TestCase):
             run_write(cfg)
 
             mock_render_suggestion.assert_called_once()
-            panels = [
-                call.args[0]
-                for call in mock_print.call_args_list
-                if call.args and getattr(call.args[0], "title", None) is not None
-            ]
-            self.assertTrue(any(panel.title == "Commit Message" for panel in panels))
+            printed = [str(call.args[0]) for call in mock_print.call_args_list if call.args]
+            self.assertTrue(any("Commit Message (copy/paste):" in line for line in printed))
+            self.assertTrue(
+                any("fix(auth): handle token expiry" in line for line in printed)
+            )
 
 
 if __name__ == "__main__":
