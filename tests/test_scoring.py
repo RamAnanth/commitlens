@@ -27,7 +27,7 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(stats.average_score, 5.0)
         self.assertEqual(stats.total, 3)
         self.assertEqual(stats.one_word_commits, 2)
-        self.assertEqual(stats.vague_commits, 2)
+        self.assertEqual(stats.vague_commits, 1)
 
 
 if __name__ == "__main__":

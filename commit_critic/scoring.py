@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import List, Tuple
 
@@ -47,21 +46,14 @@ def compute_stats(
     total = sum(c.score for c in critiques)
     average = round(total / len(critiques), 1)
 
-    vague = 0
     one_word = 0
-
-    vague_patterns = re.compile(
-        r"\b(wip|fix|fixed|update|updates|misc|changes|stuff|tmp)\b",
-        flags=re.IGNORECASE,
-    )
+    vague = 0
 
     for critique in critiques:
         words = critique.commit.strip().split()
         if len(words) == 1:
             one_word += 1
-        if critique.score <= needs_work_threshold and (
-            len(critique.commit) < 12 or vague_patterns.search(critique.commit)
-        ):
+        if critique.score < needs_work_threshold:
             vague += 1
 
     total_commits = len(critiques)
