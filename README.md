@@ -59,6 +59,19 @@ CommitLens turns commit history into actionable feedback and helps teams write c
 
 ---
 
+## ⚡ Quick start
+
+```bash
+git clone <your-repo-url>
+cd commitlens
+cp .env.example .env
+# add OPENAI_API_KEY to .env
+uv sync
+uv run python commit_critic.py --analyze --limit 10
+```
+
+---
+
 ## 🚀 Installation
 
 ### With uv (recommended)
