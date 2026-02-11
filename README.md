@@ -1,57 +1,93 @@
 # CommitLens
 
-AI-powered terminal tool that analyzes commit message quality and helps you write better commits.
+AI-powered terminal tool that critiques commit message quality and helps you write clear, high-signal commits from your shell.
 
-## Features
+CommitLens analyzes Git history, scores message quality, and suggests well-structured Conventional Commit messages from staged changes.
 
-- Analyze the last N commits in any Git repo (local or remote).
-- Interactive mode that suggests a conventional commit message from staged changes.
-- LLM output validation with Pydantic.
-- Clean terminal UI with Rich.
-- Safe by design: never runs `git commit` on your behalf.
+---
 
+## ✨ Why this exists
 
-## Prerequisites
+Commit messages are often:
+
+- vague (`fixed bug`)
+- noisy (`wip`)
+- missing context
+- inconsistent across teams
+
+CommitLens turns commit history into actionable feedback and helps teams write clearer commits consistently.
+
+---
+
+## 🧠 Features
+
+### Analysis mode
+
+- Analyze the last `N` commits from local repositories
+- Optionally analyze public remote repositories via `--url`
+- AI critique + score (0-10)
+- Suggestions for weak commits
+- Stats dashboard (average score, vague %, one-word %)
+
+### Interactive mode
+
+- Reads `git diff --staged`
+- Summarizes staged changes
+- Suggests a Conventional Commit message
+- You always review/edit manually (tool never runs `git commit`)
+
+### Engineering quality
+
+- Structured LLM output validation with Pydantic
+- Rich terminal UX with progress and panels
+- Diff filtering for lockfiles/binary assets
+- Large diff truncation for prompt safety
+- Lightweight eval harness for scoring behavior
+- Minimal test suite for parsing/scoring/git-validation logic
+
+---
+
+## 🛠 Tech stack
 
 - Python 3.11+
-- Git
-- `OPENAI_API_KEY` set in `./.env` or environment
+- OpenAI API
+- Pydantic
+- Rich
+- Typer
+- python-dotenv
+- uv
 
-## Dependencies
+---
 
-- `openai`: LLM access (OpenAI only)
-- `pydantic`: schema validation for AI output
-- `rich`: terminal UI
-- `typer`: CLI parsing
-- `python-dotenv`: `.env` loading
+## 🚀 Installation
 
-## Install
+### With uv (recommended)
 
 ```bash
 uv sync
 ```
 
-### Install without uv
-
-If you prefer not to use uv:
+### Without uv
 
 ```bash
 python -m venv .venv && source .venv/bin/activate && pip install .
 ```
 
-Create `./.env`:
+Create `.env`:
 
 ```env
 OPENAI_API_KEY=your_key_here
 ```
 
-## Usage
+---
+
+## 📦 Usage
 
 ```bash
-# Analyze last 50 commits
+# Analyze last 50 commits (local repo)
 uv run python commit_critic.py --analyze
 
-# Analyze last 50 commits of remote repo
+# Analyze last 50 commits from a remote public repo
 uv run python commit_critic.py --analyze --url="https://github.com/steel-dev/steel-browser"
 
 # Interactive commit writer
@@ -67,91 +103,180 @@ python commit_critic.py --analyze --url="https://github.com/steel-dev/steel-brow
 python commit_critic.py --write
 ```
 
-## Eval
-
-Run the lightweight eval suite against sample commits:
-
-```bash
-uv run python evals/run_eval.py
-```
-
-## Tests
-
-Run the minimal test suite:
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-### Options
-
-- `--limit`: number of commits to analyze (default: 50)
-- `--model`: OpenAI model (default: `gpt-4.1-mini`)
-- `--url`: analyze a remote repository
-
 ### Help
 
 ```bash
 uv run python commit_critic.py --help
 ```
 
-## Output
+---
 
-### Analysis mode
+## 📊 Example output
 
-- **Commits that need work**: score `< 5`, includes Issue + Better message (top 5 shown)
-- **Well-written commits**: score `>= 8`, shows only “Why it’s good” (top 5 shown)
-- **Stats**: average score + vague and one-word counts with percentages
+### Analyze mode (real sample)
 
+```text
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💩 COMMITS THAT NEED WORK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No weak commits found.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💎 WELL-WRITTEN COMMITS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Commit: "chore: add MIT license and update README with license link                                                  │
+│                                                                                                                      │
+│   - Added a new LICENSE file containing the full MIT License text                                                    │
+│   - Updated README.md to replace placeholder license text with a link to the LICENSE file"                           │
+│ Score: 8/10                                                                                                          │
+│ Why it's good: The message clearly states what was done and uses the correct type. The detailed bullet points help   │
+│ understand the changes but could be shortened for brevity.                                                           │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 YOUR STATS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────────┬──────────┐
+│ Average score    │ 7.5/10   │
+│ Vague commits    │ 0 (0.0%) │
+│ One-word commits │ 0 (0.0%) │
+└──────────────────┴──────────┘
+```
 
 ### Interactive mode
 
-- Summarizes staged changes and proposes a commit message.
-- Prompts you to accept or override.
-- The suggested message is generated live in the terminal.
+```text
+Analyzing staged changes... (2 files changed, +22 -1 lines)
+╭─────────────────────────────────────────────────────────────────────────────────────────╮
+│ SUMMARY:                                                                                │
+│ - Add MIT License file with full text                                                   │
+│ - Update README to link to the new LICENSE file                                         │
+│                                                                                         │
+│ SUBJECT:                                                                                │
+│ chore: add MIT license and update README with license link                              │
+│                                                                                         │
+│ BODY:                                                                                   │
+│ - Added a new LICENSE file containing the full MIT License text                         │
+│ - Updated README.md to replace placeholder license text with a link to the LICENSE file │
+╰─────────────────────────────────────────────────────────────────────────────────────────╯
 
-## How scoring works
+Changes detected:
+- Add MIT License file with full text
+- Update README to link to the new LICENSE file
 
-The LLM is guided to score commits on a 1–10 scale based on Conventional Commits clarity and specificity.
-
-Bucket thresholds (used in analysis and evals):
-
-- `needs_work`: 0–4
-- `mid`: 5–7
-- `well_written`: 8–10
-
-## Diff filtering
-
-Lockfiles and binary assets are excluded from the diff context. Large diffs are truncated with a clear marker.
-
-## Troubleshooting
-
-- **“Please set OPENAI_API_KEY…”**: add the key to `./.env` or your shell environment.
-- **“Please run inside a git repository…”**: run the command in a repo or use `--url`.
-- **Remote repo access issues**: private repos require credentials; use a token or SSH key.
-
-## Design choices
-
-- **Pydantic**: guarantees structured LLM output before stats and UI rendering.
-- **Rich**: readable sections and commit panels in the terminal.
-- **uv**: fast, reproducible installs.
-
-## Current scope
-- OpenAI models are supported.
-- Remote `--url` analysis supports public Git repositories.
-
-## Future work
-
-- Add multi-provider support via a small adapter layer (OpenAI/Anthropic/Gemini).
-
-## Project layout
-
-Flat layout for simplicity:
-
+Suggested commit message:
+╭─────────────────────────────────────────────────────────────────────────────────────────╮
+│ chore: add MIT license and update README with license link                              │
+│                                                                                         │
+│ - Added a new LICENSE file containing the full MIT License text                         │
+│ - Updated README.md to replace placeholder license text with a link to the LICENSE file │
+╰─────────────────────────────────────────────────────────────────────────────────────────╯
+Press Enter to accept, or type your own message ():
 ```
-commit_critic.py
-commit_critic/
+
+---
+
+## 🧪 Evaluation
+
+Run eval suite:
+
+```bash
+uv run python evals/run_eval.py
 ```
+
+Eval report includes:
+
+- bucket accuracy (`needs_work`/`mid`/`well_written`)
+- score tolerance metric (±1) for LLM variance
+
+---
+
+## ✅ Tests
+
+Run tests:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+---
+
+## 🧱 Architecture
+
+```text
+git commits/diff
+    -> prompt construction
+    -> OpenAI LLM call
+    -> Pydantic validation
+    -> scoring + stats
+    -> Rich terminal rendering
+```
+
+Key modules:
+
+- `commit_critic/app.py`: CLI entry and mode orchestration
+- `commit_critic/git_ops.py`: git cloning/log/diff utilities
+- `commit_critic/llm_client.py`: LLM prompts, API calls, parsing, validation
+- `commit_critic/scoring.py`: thresholds and statistics
+- `commit_critic/ui.py`: rich output rendering
+- `evals/run_eval.py`: lightweight scoring evaluation harness
+
+---
+
+## ⚙️ Options
+
+- `--limit`: number of commits to analyze (default: 50)
+- `--model`: OpenAI model to use (default: `gpt-4.1-mini`)
+- `--url`: analyze a remote repository
+- `--analyze`: analyze commit history mode
+- `--write`: interactive commit writer mode
+
+---
+
+## 🎯 Current scope
+
+- OpenAI models are supported
+- Remote `--url` analysis supports public Git repositories
+
+---
+
+## 🔮 Future work
+
+- Multi-provider support (Anthropic/Gemini)
+- Local model support
+- Optional caching for repeated analyses
+
+---
+
+## 📂 Project structure
+
+```text
+.
+├── commit_critic/          # Core package logic
+│   ├── app.py              # Typer CLI mode orchestration (--analyze / --write)
+│   ├── config.py           # .env loading and API key validation
+│   ├── git_ops.py          # Git operations (clone/log/diff/repo checks)
+│   ├── llm_client.py       # LLM prompts, API calls, response parsing
+│   ├── models.py           # Pydantic schemas for critiques/suggestions
+│   ├── scoring.py          # Commit bucket logic and aggregate stats
+│   ├── ui.py               # Rich terminal rendering
+│   └── diff_cleaner.py     # Diff filtering/truncation for prompt safety
+├── tests/                  # Unit tests (logic and mocked integrations)
+├── evals/                  # LLM scoring evaluation harness
+├── commit_critic.py        # CLI entry point
+├── pyproject.toml          # Project metadata and dependencies
+├── uv.lock                 # Reproducible dependency lockfile
+├── .env.example            # Environment variable template
+├── README.md               # Documentation
+└── LICENSE                 # MIT license
+```
+
+---
 
 ## License
 
