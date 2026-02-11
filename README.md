@@ -94,6 +94,16 @@ OPENAI_API_KEY=your_key_here
 
 ---
 
+## 🔐 Security
+
+- `OPENAI_API_KEY` is read from environment variables (or local `.env`) at runtime.
+- CommitLens does not write your API key to project files.
+- `.env` is git-ignored; only `.env.example` is tracked.
+- If a key is exposed, rotate it immediately in your OpenAI dashboard.
+- Use least-privilege practices: keep keys local, do not paste keys into commit messages, issues, or logs.
+
+---
+
 ## 📦 Usage
 
 ```bash
