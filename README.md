@@ -155,4 +155,4 @@ commit_critic/
 
 ## License
 
-License to be added.
+[MIT License](LICENSE)
